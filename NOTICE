@@ -1,0 +1,14 @@
+Mistral Vibe for DeepSeek Harness
+Copyright (c) 2026 Mars-Sea
+
+This bundle is derived from dsh-mistral-vibe 1.1.1
+(https://github.com/meltartica/dsh-mistral-vibe), Copyright (c) 2026 Meltartica,
+used under the MIT License.
+
+The upstream project supplies the Mistral wire adapter, the model catalogue and
+thinking-level contract, the settings-page shell, and the vendored schema helpers
+under vendor/. This bundle adds the PKCE browser sign-in, the account/budget HTTP
+surface and its settings card, the package identity, and the documentation.
+
+The bundle is distributed under the MIT License; see LICENSE for the full text,
+which reproduces both copyright notices.

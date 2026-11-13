@@ -1,0 +1,67 @@
+{
+  "name": "@mars-sea/dsh-mistral-vibe-provider",
+  "displayName": "Mistral Vibe",
+  "version": "0.1.0",
+  "description": "Mistral Vibe for DeepSeek Harness: the Vibe Code route with PKCE browser sign-in, a live model catalogue, and the real Vibe vs Studio/API budget meters.",
+  "type": "module",
+  "license": "MIT",
+  "author": "Mars-Sea",
+  "contributors": [
+    "Meltartica (upstream adapter this bundle is derived from)"
+  ],
+  "homepage": "https://github.com/JinKaZh1/dsh-mistral-vibe-provider#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JinKaZh1/dsh-mistral-vibe-provider.git"
+  },
+  "bugs": {
+    "url": "https://github.com/JinKaZh1/dsh-mistral-vibe-provider/issues"
+  },
+  "keywords": [
+    "deepseek-harness",
+    "dsh",
+    "dsh-plugin",
+    "mistral",
+    "mistral-vibe",
+    "vibe-code",
+    "model-provider",
+    "reasoning-effort",
+    "pkce"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "main": "lib/index.js",
+  "icon": "icon.svg",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./lib/client.js",
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./locale/*.json": "./locale/*.json",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "vendor",
+    "locale",
+    "docs",
+    "icon.svg",
+    "cordis.patch.yml",
+    "README.md",
+    "LICENSE",
+    "NOTICE"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-runtime",
+        "@deepseek-ai/dsh-client-ui-slots",
+        "@deepseek-ai/dsh-client-ui-settings"
+      ]
+    }
+  }
+}

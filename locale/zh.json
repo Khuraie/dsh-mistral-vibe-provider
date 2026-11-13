@@ -1,0 +1,7 @@
+{
+  "meta": {
+    "title": "Mistral Vibe",
+    "description": "Vibe Code 接入路由：浏览器登录、真实预算读数、按模型映射 reasoning_effort 的思考档位，并从 /v1/billing/budget 读出 Vibe Code 与 Studio/API 两份额度。",
+    "detail": "docs/DETAIL.md"
+  }
+}

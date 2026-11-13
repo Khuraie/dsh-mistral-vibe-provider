@@ -1,0 +1,15 @@
+# Register the Mistral Vibe provider route and its settings page.
+#
+# The adapter owns the LLM route `mistral-vibe` end to end (wire, catalogue,
+# thinking levels); the same row also carries the account surface — PKCE
+# browser sign-in and the Vibe / Studio budget meters — served over the
+# host's web server at /mistral-vibe/*.
+#
+# The API key is read from the credential reference named by `apiKeyEnv`
+# (default `MISTRAL_API_KEY`) through the credentials service, then from the
+# host process environment. A key typed on, or approved by, the settings page
+# is written to that same reference, so a value pasted into the previous
+# bundle keeps working here.
+- insert:
+    - id: llm-mistral-vibe
+      name: "@mars-sea/dsh-mistral-vibe-provider"

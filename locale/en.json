@@ -1,0 +1,7 @@
+{
+  "meta": {
+    "title": "Mistral Vibe",
+    "description": "The Vibe Code route with browser sign-in and real budget meters: models served by api.mistral.ai, thinking levels mapped to reasoning_effort, and the Vibe Code vs Studio/API allowance split read from /v1/billing/budget.",
+    "detail": "docs/DETAIL.md"
+  }
+}
