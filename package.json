@@ -1,7 +1,7 @@
 {
   "name": "@mars-sea/dsh-mistral-vibe-provider",
   "displayName": "Mistral Vibe",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Mistral Vibe for DeepSeek Harness: the Vibe Code route with PKCE browser sign-in, a live model catalogue, and the real Vibe vs Studio/API budget meters.",
   "type": "module",
   "license": "MIT",
