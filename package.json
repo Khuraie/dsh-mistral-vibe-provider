@@ -9,13 +9,13 @@
   "contributors": [
     "Meltartica (upstream adapter this bundle is derived from)"
   ],
-  "homepage": "https://github.com/JinKaZh1/dsh-mistral-vibe-provider#readme",
+  "homepage": "https://github.com/Khuraie/dsh-mistral-vibe-provider#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/JinKaZh1/dsh-mistral-vibe-provider.git"
+    "url": "git+https://github.com/Khuraie/dsh-mistral-vibe-provider.git"
   },
   "bugs": {
-    "url": "https://github.com/JinKaZh1/dsh-mistral-vibe-provider/issues"
+    "url": "https://github.com/Khuraie/dsh-mistral-vibe-provider/issues"
   },
   "keywords": [
     "deepseek-harness",
