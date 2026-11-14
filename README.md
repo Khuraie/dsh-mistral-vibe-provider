@@ -85,6 +85,13 @@ token for an exposed web UI.
   86–100%. The default target is therefore smaller than the harness default for
   other providers (1568px / 4 MB). Raise `imageMaxEdge` / `imageMaxBytesKb` for
   finer detail at the cost of cache hits.
+- **Sticky routing for the prefix cache.** Mistral's prompt cache lives on the
+  backend instance that served a prefix, so a request routed to another instance
+  misses even when the prefix is byte-identical — the whole-prefix drops that
+  show up a few times per Session. Every request now carries
+  `x-affinity: <session id>`, the same header Mistral's own Vibe CLI sends, so a
+  Session stays on one instance. It is only sent to `*.mistral.ai` hosts and can
+  be turned off with `sendAffinity: false`.
 - **Already-seen images are offloaded, so the cache break lands at the tail.**
   Once the model has answered on an image, re-sending it cannot teach it
   anything — it only pushes the transcript's first difference deeper into the

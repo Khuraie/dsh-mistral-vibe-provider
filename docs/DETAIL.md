@@ -38,6 +38,11 @@ the Mistral API actually supports.
   payload makes image-bearing requests miss it: measured Sessions dropped to
   1–26% cache hit on steps carrying a 1–4 MB screenshot while text-only steps
   stayed at 86–100%. `imageMaxEdge` / `imageMaxBytesKb` trade detail for cache.
+- Every request to a `*.mistral.ai` host carries `x-affinity: <session id>`, so a
+  Session stays on the backend instance that holds its prefix cache. Mistral's
+  own Vibe CLI sends the same header; without it, requests routed to another
+  instance miss the cache even on a byte-identical prefix. `sendAffinity: false`
+  turns it off.
 - An image the model has already answered on is offloaded before replay
   (`offloadSeenImages`, default on), so the transcript change lands at the recent
   tail instead of deep inside the cached prefix. The newest image-bearing message

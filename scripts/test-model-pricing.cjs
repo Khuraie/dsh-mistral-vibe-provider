@@ -416,6 +416,31 @@ async function main() {
   );
   check("no model-visible image text is claimed", pricedImages.every((entry) => entry.text === ""));
 
+  /* --- sticky routing for the prefix cache ----------------------------- */
+  const affinity = (settings, sessionId) => JSON.stringify(host.affinityHeader(settings, sessionId));
+  check(
+    "a Mistral host gets the session's affinity",
+    affinity({ baseURL: "https://api.mistral.ai/v1" }, "session-1") === JSON.stringify({ "x-affinity": "session-1" }),
+    affinity({ baseURL: "https://api.mistral.ai/v1" }, "session-1"),
+  );
+  check(
+    "the EU host gets it too",
+    affinity({ baseURL: "https://api.eu.mistral.ai/v1" }, "s") === JSON.stringify({ "x-affinity": "s" }),
+    affinity({ baseURL: "https://api.eu.mistral.ai/v1" }, "s"),
+  );
+  check("the default base URL is a Mistral host", affinity({}, "s") === JSON.stringify({ "x-affinity": "s" }), affinity({}, "s"));
+  check(
+    "a gateway gets no affinity header",
+    affinity({ baseURL: "https://gateway.example.com/v1" }, "s") === "{}",
+    affinity({ baseURL: "https://gateway.example.com/v1" }, "s"),
+  );
+  check("no session id, no header", affinity({ baseURL: "https://api.mistral.ai/v1" }, undefined) === "{}");
+  check(
+    "the flag turns it off",
+    affinity({ baseURL: "https://api.mistral.ai/v1", sendAffinity: false }, "s") === "{}",
+  );
+  check("a malformed base URL sends nothing", affinity({ baseURL: "not a url" }, "s") === "{}");
+
   const failedChecks = results.filter((result) => !result.ok);
   console.log("\n" + (results.length - failedChecks.length) + "/" + results.length + " checks passed");
   process.exit(failedChecks.length === 0 ? 0 : 1);
