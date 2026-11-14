@@ -13,7 +13,34 @@ the Mistral API actually supports.
   minted key in the DSH credential store, so nothing is pasted into a form.
 - **Vibe vs API budget meters** — `/v1/billing/budget` reports the Vibe Code
   allowance and the Studio/API allowance separately; the account card shows both
-  with percent, used-of-total and reset date.
+  with percent, used-of-total and reset date, and the sidebar foot shows the same
+  two meters — dollars used of the allowance, percentage and bar — above the
+  account row, so the remaining allowance is visible without opening Settings.
+- **Prices on every model row** — each catalogue model carries its own price line
+  (`$0.30 in · $0.007 cached · $1.20 out / 1M tokens` for DeepSeek V4.1 Flash
+  1017), so the cost is visible where the models are listed. DSH's model contract
+  has no price field, so this is drawn by the plugin rather than by the picker.
+- **A price badge and a session cost run** — the model picker badges each model
+  with its input/output price, and the composer's token-usage pill gains
+  `· ≈$1.51` at the end of its own text run, re-read whenever those numbers move.
+  The figure is folded from that Session's own usage at the catalogue's list
+  prices; other providers' messages are never priced here.
+
+## What to keep in mind
+
+- Mistral's default for a request with no `reasoning_effort` is *off*, so a route
+  that forwards "nothing chosen" silently runs DeepSeek V4.1 Flash without a
+  reasoning trace. This bundle declares `high` as the default level for every
+  model that can think, matching the official DeepSeek route; `off` stays one
+  pick away in the model picker.
+- Mistral refuses a request carrying more than 20 images (`400
+  invalid_request_invalid_args`, code 3051). The harness keeps every pasted image
+  in the history, so the adapter keeps images only in the last two image-bearing
+  messages (`imageHistoryMessages`) and replaces older ones with a short
+  `[image omitted …]` note. Older images are dropped from the tail, not the head,
+  because Mistral's prompt cache is a longest-common-prefix cache: rewriting an
+  early image invalidates everything after it, while rewriting the last couple of
+  messages keeps the rest of the prompt cached.
 
 ## Getting started
 
