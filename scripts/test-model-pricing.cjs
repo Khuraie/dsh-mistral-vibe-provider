@@ -438,6 +438,36 @@ async function main() {
   );
   check("no model-visible image text is claimed", pricedImages.every((entry) => entry.text === ""));
 
+  /* --- the settings projection ----------------------------------------- */
+  const projectedSettings = (config) => new host.MistralVibeAdapter(() => config).settings();
+  check(
+    "the cache-aware image mode is off unless asked for",
+    projectedSettings({}).offloadSeenImages === false,
+    String(projectedSettings({}).offloadSeenImages),
+  );
+  check(
+    "an explicit true turns it on",
+    projectedSettings({ offloadSeenImages: true }).offloadSeenImages === true,
+  );
+  check(
+    "the keep window defaults to three batches",
+    projectedSettings({}).imageKeepBatches === 3,
+    String(projectedSettings({}).imageKeepBatches),
+  );
+  check(
+    "a configured keep window is honoured",
+    projectedSettings({ imageKeepBatches: 5 }).imageKeepBatches === 5,
+  );
+  check(
+    "a junk keep window falls back to the default",
+    projectedSettings({ imageKeepBatches: "lots" }).imageKeepBatches === 3,
+  );
+  check("affinity is on unless turned off", projectedSettings({}).sendAffinity === true);
+  check(
+    "affinity can be turned off",
+    projectedSettings({ sendAffinity: false }).sendAffinity === false,
+  );
+
   /* --- sticky routing for the prefix cache ----------------------------- */
   const affinity = (settings, sessionId) => JSON.stringify(host.affinityHeader(settings, sessionId));
   check(
