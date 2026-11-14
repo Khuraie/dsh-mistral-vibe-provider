@@ -78,6 +78,13 @@ token for an exposed web UI.
   This route declares `high` as the default level for every model that can think
   (the official DeepSeek route does the same), so a fresh Session thinks unless
   you pick `off` in the model picker.
+- **Screenshots are downscaled to 1024px / 768 KB.** Mistral's prompt cache only
+  serves a request that repeats byte-for-byte, and a large image payload makes
+  image-bearing requests miss it entirely: in a measured Session, steps carrying
+  a 1–4 MB screenshot fell to 1–26% cache hit while text-only steps stayed at
+  86–100%. The default target is therefore smaller than the harness default for
+  other providers (1568px / 4 MB). Raise `imageMaxEdge` / `imageMaxBytesKb` for
+  finer detail at the cost of cache hits.
 - **At most 20 images per request, and only the newest screenshots are sent.**
   Mistral answers `400 invalid_request_invalid_args` ("Total number of images
   exceeds the maximum allowed of 20", code 3051) for a longer image history, which

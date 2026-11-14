@@ -263,6 +263,37 @@ async function main() {
   check("a model with only off and high defaults to high", medium.defaultEffort === "high", medium.defaultEffort);
   check("a model without levels has no reasoning control", host.reasoningMetadata({ id: "x" }) === undefined);
 
+  /* --- the request image budget ---------------------------------------- */
+  const target = host.imageRequestTargetFor({});
+  check(
+    "the default image target is 1024px / 768KB",
+    target.width === 1024 && target.height === 1024 && target.maxBytes === 768 * 1024,
+    JSON.stringify(target),
+  );
+  check(
+    "the default is smaller than the harness default",
+    target.width < 1568 && target.maxBytes < 4 * 1024 * 1024,
+    JSON.stringify(target),
+  );
+  const configured = host.imageRequestTargetFor({ imageMaxEdge: 1280, imageMaxBytesKb: 1024 });
+  check(
+    "a configured target is honoured",
+    configured.width === 1280 && configured.maxBytes === 1024 * 1024,
+    JSON.stringify(configured),
+  );
+  const tooSmall = host.imageRequestTargetFor({ imageMaxEdge: 10, imageMaxBytesKb: 1 });
+  check(
+    "an out-of-range target falls back to the default",
+    tooSmall.width === 1024 && tooSmall.maxBytes === 768 * 1024,
+    JSON.stringify(tooSmall),
+  );
+  const tooLarge = host.imageRequestTargetFor({ imageMaxEdge: 99999, imageMaxBytesKb: 99999 });
+  check(
+    "an oversized target is capped",
+    tooLarge.width === 4096 && tooLarge.maxBytes === 8192 * 1024,
+    JSON.stringify(tooLarge),
+  );
+
   const failedChecks = results.filter((result) => !result.ok);
   console.log("\n" + (results.length - failedChecks.length) + "/" + results.length + " checks passed");
   process.exit(failedChecks.length === 0 ? 0 : 1);

@@ -33,6 +33,11 @@ the Mistral API actually supports.
   reasoning trace. This bundle declares `high` as the default level for every
   model that can think, matching the official DeepSeek route; `off` stays one
   pick away in the model picker.
+- Request images are downscaled to 1024px / 768 KB by default. Mistral's prompt
+  cache only serves a request that repeats byte-for-byte, and a large image
+  payload makes image-bearing requests miss it: measured Sessions dropped to
+  1–26% cache hit on steps carrying a 1–4 MB screenshot while text-only steps
+  stayed at 86–100%. `imageMaxEdge` / `imageMaxBytesKb` trade detail for cache.
 - Mistral refuses a request carrying more than 20 images (`400
   invalid_request_invalid_args`, code 3051). The harness keeps every pasted image
   in the history, so the adapter keeps images only in the last two image-bearing
