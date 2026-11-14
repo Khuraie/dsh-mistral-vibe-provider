@@ -316,6 +316,21 @@ async function main() {
     seen([{ role: "user", content: [imageBlock(1000)] }, answer(), userImage("m2")]) === 0,
   );
 
+  /* a batch of read_image results is one run of tool messages, not one image */
+  const toolImage = (id) => ({ id, role: "tool", content: [imageBlock(1000)] });
+  const batches = [
+    userImage("m1"),
+    answer(),
+    toolImage("t1-a"), toolImage("t1-b"), toolImage("t1-c"), toolImage("t1-d"), toolImage("t1-e"),
+    answer(),
+    toolImage("t2-a"), toolImage("t2-b"), toolImage("t2-c"), toolImage("t2-d"), toolImage("t2-e"),
+  ];
+  check(
+    "the whole newest batch stays, the previous batch and the screenshot go",
+    seen(batches) === 6,
+    String(seen(batches)),
+  );
+
   /* --- the default thinking level -------------------------------------- */
   const deepseek = host.reasoningMetadata(host.MODEL_CATALOGUE.find((model) => model.id === "deepseek-v4-1-flash-1017"));
   check("deepseek v4.1 flash thinks by default", deepseek !== undefined && deepseek.defaultEffort === "high", deepseek && deepseek.defaultEffort);
