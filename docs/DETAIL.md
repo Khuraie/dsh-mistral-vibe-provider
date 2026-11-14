@@ -38,6 +38,11 @@ the Mistral API actually supports.
   payload makes image-bearing requests miss it: measured Sessions dropped to
   1–26% cache hit on steps carrying a 1–4 MB screenshot while text-only steps
   stayed at 86–100%. `imageMaxEdge` / `imageMaxBytesKb` trade detail for cache.
+- An image the model has already answered on is offloaded before replay
+  (`offloadSeenImages`, default on), so the transcript change lands at the recent
+  tail instead of deep inside the cached prefix. The newest image-bearing message
+  is exempt, so a screenshot stays visible across follow-ups until a newer one
+  arrives.
 - Mistral refuses a request carrying more than 20 images (`400
   invalid_request_invalid_args`, code 3051). The adapter does not drop images
   itself: it fails the step with `IMAGE_OFFLOAD_REQUIRED` and the count, and the

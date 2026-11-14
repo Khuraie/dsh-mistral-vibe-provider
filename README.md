@@ -85,6 +85,15 @@ token for an exposed web UI.
   86–100%. The default target is therefore smaller than the harness default for
   other providers (1568px / 4 MB). Raise `imageMaxEdge` / `imageMaxBytesKb` for
   finer detail at the cost of cache hits.
+- **Already-seen images are offloaded, so the cache break lands at the tail.**
+  Once the model has answered on an image, re-sending it cannot teach it
+  anything — it only pushes the transcript's first difference deeper into the
+  cached prefix. With `offloadSeenImages` on (the default) the adapter asks for
+  those images to be offloaded before replay, so the change happens at the
+  recent tail where the cache misses anyway. The newest image-bearing message is
+  exempt: a screenshot stays visible across follow-ups until a newer one
+  arrives. Turn the flag off when the model must keep re-reading an older
+  screenshot.
 - **At most 20 images per request — enforced through the harness's offload
   protocol.** Mistral answers `400 invalid_request_invalid_args` ("Total number
   of images exceeds the maximum allowed of 20", code 3051) for a longer image

@@ -278,6 +278,44 @@ async function main() {
     offloadFailure && JSON.stringify(offloadFailure.failure),
   );
 
+  /* --- cache-aware offload of already-seen images ----------------------- */
+  const userImage = (id, bytes = 1000, offloaded = false) => ({
+    id,
+    role: "user",
+    content: [imageBlock(bytes, offloaded)],
+  });
+  const answer = (provider = "mistral-vibe", model = "deepseek-v4-1-flash-1017") => ({
+    role: "assistant",
+    source: { kind: "model", provider, model },
+    content: [{ type: "text", text: "ok" }],
+  });
+  const seen = (messages) => host.seenImageOffloadCount(messages, "mistral-vibe", "deepseek-v4-1-flash-1017");
+
+  check("a lone screenshot survives follow-ups", seen([userImage("m1"), answer(), { id: "m2", role: "user", content: [{ type: "text", text: "and now?" }] }]) === 0);
+  check(
+    "an older screenshot is offloaded once a newer one arrives",
+    seen([userImage("m1"), answer(), userImage("m2")]) === 1,
+    String(seen([userImage("m1"), answer(), userImage("m2")])),
+  );
+  check(
+    "a current-step tool image makes the older screenshot stale",
+    seen([userImage("m1"), answer(), { id: "t1", role: "tool", content: [imageBlock(1000)] }]) === 1,
+    String(seen([userImage("m1"), answer(), { id: "t1", role: "tool", content: [imageBlock(1000)] }])),
+  );
+  check("the first request of a session offloads nothing", seen([userImage("m1")]) === 0);
+  check(
+    "an answer from another route is not this model's answer",
+    seen([userImage("m1"), answer("commandcode", "x"), userImage("m2")]) === 0,
+  );
+  check(
+    "an image already offloaded is not counted again",
+    seen([userImage("m1", 1000, true), answer(), userImage("m2")]) === 0,
+  );
+  check(
+    "a request-only message cannot be offloaded",
+    seen([{ role: "user", content: [imageBlock(1000)] }, answer(), userImage("m2")]) === 0,
+  );
+
   /* --- the default thinking level -------------------------------------- */
   const deepseek = host.reasoningMetadata(host.MODEL_CATALOGUE.find((model) => model.id === "deepseek-v4-1-flash-1017"));
   check("deepseek v4.1 flash thinks by default", deepseek !== undefined && deepseek.defaultEffort === "high", deepseek && deepseek.defaultEffort);
