@@ -43,12 +43,16 @@ the Mistral API actually supports.
   own Vibe CLI sends the same header; without it, requests routed to another
   instance miss the cache even on a byte-identical prefix. `sendAffinity: false`
   turns it off.
-- An image the model has already answered on is offloaded before replay
-  (`offloadSeenImages`, default on), so the transcript change lands at the recent
-  tail instead of deep inside the cached prefix. The newest `imageKeepBatches`
-  batches (default 3) keep their pixels: a visual workflow compares one render
-  against the previous one, and offloading that previous render is what makes a
-  model report that it forgot what it just looked at.
+- Images stay on the wire by default: up to Mistral's 20-image ceiling the
+  transcript keeps every screenshot, so a visual workflow can compare one render
+  against the previous one. `offloadSeenImages` (off by default, matching Command
+  Code) is the opt-in cache mode — images the model has already answered on
+  become placeholders so a new screenshot no longer rolls the cache back, at the
+  cost of re-reading to see an image again. `imageKeepBatches` (default 3) keeps
+  that mode's newest batches as pixels.
+- The 20-image budget retires four images at a time, so the retained window stays
+  between 17 and 20 instead of collapsing to one — the cliff a quantum of 20
+  produced.
 - Mistral refuses a request carrying more than 20 images (`400
   invalid_request_invalid_args`, code 3051). The adapter does not drop images
   itself: it fails the step with `IMAGE_OFFLOAD_REQUIRED` and the count, and the

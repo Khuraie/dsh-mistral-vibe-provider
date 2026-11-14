@@ -92,16 +92,13 @@ token for an exposed web UI.
   `x-affinity: <session id>`, the same header Mistral's own Vibe CLI sends, so a
   Session stays on one instance. It is only sent to `*.mistral.ai` hosts and can
   be turned off with `sendAffinity: false`.
-- **Already-seen images are offloaded, so the cache break lands at the tail.**
-  Once the model has answered on an image, re-sending it cannot teach it
-  anything — it only pushes the transcript's first difference deeper into the
-  cached prefix. With `offloadSeenImages` on (the default) the adapter asks for
-  those images to be offloaded before replay, so the change happens at the
-  recent tail where the cache misses anyway. The newest `imageKeepBatches`
-  batches (default 3) keep their pixels, because a visual workflow compares one
-  render against the previous one — offloading that previous render is what makes
-  a model report that it forgot what it just looked at. Turn the flag off when
-  the model must keep re-reading an older screenshot.
+- **Images stay visible by default.** Up to Mistral's 20-image ceiling the
+  transcript keeps every screenshot, so a visual workflow can compare one render
+  against the previous one. `offloadSeenImages` (off by default, like Command
+  Code's equivalent) is the opt-in cache mode: images the model has already
+  answered on become placeholders, so a new screenshot no longer rolls the
+  prompt cache back — at the cost of having to re-read an image to see it again.
+  `imageKeepBatches` (default 3) keeps that mode's newest batches as pixels.
 - **At most 20 images per request — enforced through the harness's offload
   protocol.** Mistral answers `400 invalid_request_invalid_args` ("Total number
   of images exceeds the maximum allowed of 20", code 3051) for a longer image
@@ -110,8 +107,8 @@ token for an exposed web UI.
   fails the step with `IMAGE_OFFLOAD_REQUIRED` and the count it needs. The
   harness's `dsh-compaction-image-offload` plugin records one durable
   `image/offload` selection (the oldest images become placeholders naming each
-  attachment) and retries, so the transcript changes once per batch instead of
-  once per turn and the cached prefix survives between batches.
+  attachment) and retries. The count is retired four at a time, so the retained
+  window stays between 17 and 20 images instead of collapsing to one.
 
 - **Tier gating is server-side per model.** On a free plan the live catalogue
   simply omits paid models such as `deepseek-v4-1-flash-1017`, and calling one

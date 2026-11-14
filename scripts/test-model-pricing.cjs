@@ -215,13 +215,18 @@ async function main() {
     String(host.requiredImageOffload(imageMessages(20), budget, versionBytes)),
   );
   check(
-    "one image over the limit offloads the whole window",
-    host.requiredImageOffload(imageMessages(21), budget, versionBytes) === 20,
+    "one image over the limit retires one quantum, not the whole window",
+    host.requiredImageOffload(imageMessages(21), budget, versionBytes) === 4,
     String(host.requiredImageOffload(imageMessages(21), budget, versionBytes)),
   );
   check(
-    "two windows over the limit offload two windows",
-    host.requiredImageOffload(imageMessages(41), budget, versionBytes) === 40,
+    "the retained window stays near the limit",
+    21 - host.requiredImageOffload(imageMessages(21), budget, versionBytes) === 17,
+    String(21 - host.requiredImageOffload(imageMessages(21), budget, versionBytes)),
+  );
+  check(
+    "a long overflow retires one quantum per excess quantum",
+    host.requiredImageOffload(imageMessages(41), budget, versionBytes) === 24,
     String(host.requiredImageOffload(imageMessages(41), budget, versionBytes)),
   );
   check(
@@ -274,7 +279,7 @@ async function main() {
   );
   check(
     "the failure carries the offload count",
-    offloadFailure !== undefined && offloadFailure.failure !== undefined && offloadFailure.failure.offloadImages === 20,
+    offloadFailure !== undefined && offloadFailure.failure !== undefined && offloadFailure.failure.offloadImages === 4,
     offloadFailure && JSON.stringify(offloadFailure.failure),
   );
 
