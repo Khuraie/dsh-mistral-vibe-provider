@@ -85,15 +85,16 @@ token for an exposed web UI.
   86–100%. The default target is therefore smaller than the harness default for
   other providers (1568px / 4 MB). Raise `imageMaxEdge` / `imageMaxBytesKb` for
   finer detail at the cost of cache hits.
-- **At most 20 images per request, and only the newest screenshots are sent.**
-  Mistral answers `400 invalid_request_invalid_args` ("Total number of images
-  exceeds the maximum allowed of 20", code 3051) for a longer image history, which
-  a screenshot-heavy Session reaches within a few turns. The adapter keeps images
-  only in the last two image-bearing messages (`imageHistoryMessages`) and
-  replaces older ones with a short `[image omitted …]` note. That is deliberate:
-  Mistral's prompt cache is a longest-common-prefix cache, so a transcript that
-  keeps rewriting older images loses 15–25 points of cache hit; keeping the
-  rewrite at the tail keeps everything before it cached.
+- **At most 20 images per request — enforced through the harness's offload
+  protocol.** Mistral answers `400 invalid_request_invalid_args` ("Total number
+  of images exceeds the maximum allowed of 20", code 3051) for a longer image
+  history. Instead of dropping images itself — which rewrites the transcript on
+  every request and breaks Mistral's longest-common-prefix cache — the adapter
+  fails the step with `IMAGE_OFFLOAD_REQUIRED` and the count it needs. The
+  harness's `dsh-compaction-image-offload` plugin records one durable
+  `image/offload` selection (the oldest images become placeholders naming each
+  attachment) and retries, so the transcript changes once per batch instead of
+  once per turn and the cached prefix survives between batches.
 
 - **Tier gating is server-side per model.** On a free plan the live catalogue
   simply omits paid models such as `deepseek-v4-1-flash-1017`, and calling one

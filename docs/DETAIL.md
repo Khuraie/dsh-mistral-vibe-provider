@@ -39,13 +39,12 @@ the Mistral API actually supports.
   1–26% cache hit on steps carrying a 1–4 MB screenshot while text-only steps
   stayed at 86–100%. `imageMaxEdge` / `imageMaxBytesKb` trade detail for cache.
 - Mistral refuses a request carrying more than 20 images (`400
-  invalid_request_invalid_args`, code 3051). The harness keeps every pasted image
-  in the history, so the adapter keeps images only in the last two image-bearing
-  messages (`imageHistoryMessages`) and replaces older ones with a short
-  `[image omitted …]` note. Older images are dropped from the tail, not the head,
-  because Mistral's prompt cache is a longest-common-prefix cache: rewriting an
-  early image invalidates everything after it, while rewriting the last couple of
-  messages keeps the rest of the prompt cached.
+  invalid_request_invalid_args`, code 3051). The adapter does not drop images
+  itself: it fails the step with `IMAGE_OFFLOAD_REQUIRED` and the count, and the
+  harness's `dsh-compaction-image-offload` plugin records a durable
+  `image/offload` selection before retrying. One batch rewrite per overflow keeps
+  Mistral's longest-common-prefix cache warm, where a per-request rewrite would
+  break it every turn.
 
 ## Getting started
 

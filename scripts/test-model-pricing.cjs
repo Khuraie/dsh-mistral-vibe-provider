@@ -197,57 +197,86 @@ async function main() {
   );
   check("an empty session costs nothing", host.sessionCost({ ownEvents: () => [] }).cost === 0);
 
-  /* --- the request image cap ------------------------------------------- */
-  const imagePart = () => ({ type: "image_url", image_url: "data:image/png;base64,AAAA" });
-  const textPart = (text) => ({ type: "text", text });
-  const countImages = (messages) =>
-    messages.reduce(
-      (total, message) =>
-        total +
-        (Array.isArray(message.content)
-          ? message.content.filter((part) => part !== null && typeof part === "object" && part.type === "image_url").length
-          : 0),
-      0,
-    );
-  const shotMessages = (count) => {
-    const messages = [];
-    for (let index = 0; index < count; index += 1) {
-      messages.push({ role: "user", content: [textPart("shot " + index), imagePart()] });
-    }
-    return messages;
-  };
+  /* --- the request image budget (harness offload protocol) -------------- */
+  const imageBlock = (bytes, offloaded) => ({
+    type: "image",
+    attachment: { attachmentId: "sha256:" + "a".repeat(64), bytes, name: "shot.png" },
+    ...(offloaded === true ? { offloaded: true } : {}),
+  });
+  const imageMessages = (count, bytes = 1000, offloaded = false) => [
+    { role: "user", content: Array.from({ length: count }, () => imageBlock(bytes, offloaded)) },
+  ];
+  const versionBytes = (block) => block.attachment.bytes;
+  const budget = host.IMAGE_REQUEST_BUDGET;
 
-  const few = host.capRequestImages(shotMessages(3));
-  check("only the newest image messages are kept by default", countImages(few) === 2, String(countImages(few)));
   check(
-    "the oldest image message becomes a note",
-    few[0].content[1].type === "text" && few[0].content[1].text.includes("image omitted"),
-    JSON.stringify(few[0].content[1]),
+    "a history inside the budget needs no offload",
+    host.requiredImageOffload(imageMessages(20), budget, versionBytes) === 0,
+    String(host.requiredImageOffload(imageMessages(20), budget, versionBytes)),
   );
-  check("the newest image messages keep their images", few[2].content[1].type === "image_url");
-  check("every message keeps its shape", few.every((message) => message.content.length === 2));
-
-  const underWindow = host.capRequestImages(shotMessages(2));
-  check("a transcript inside the window is untouched", countImages(underWindow) === 2, String(countImages(underWindow)));
-
-  const wide = host.capRequestImages(shotMessages(25), 25);
-  check("a wide window still caps at twenty images", countImages(wide) === 20, String(countImages(wide)));
-  check("the cap drops the oldest retained images", countImages(wide.slice(0, 5)) === 0, String(countImages(wide.slice(0, 5))));
-  check("the newest images are the ones kept", countImages(wide.slice(5)) === 20, String(countImages(wide.slice(5))));
-
-  const single = host.capRequestImages(
-    [{ role: "user", content: [textPart("all at once"), ...Array.from({ length: 25 }, imagePart)] }],
-    2,
+  check(
+    "one image over the limit offloads the whole window",
+    host.requiredImageOffload(imageMessages(21), budget, versionBytes) === 20,
+    String(host.requiredImageOffload(imageMessages(21), budget, versionBytes)),
   );
-  check("one message with too many images is capped too", countImages(single) === 20, String(countImages(single)));
-  check("the single message keeps its part count", single[0].content.length === 26, String(single[0].content.length));
+  check(
+    "two windows over the limit offload two windows",
+    host.requiredImageOffload(imageMessages(41), budget, versionBytes) === 40,
+    String(host.requiredImageOffload(imageMessages(41), budget, versionBytes)),
+  );
+  check(
+    "images the harness already offloaded do not count",
+    host.requiredImageOffload(imageMessages(25, 1000, true), budget, versionBytes) === 0,
+    String(host.requiredImageOffload(imageMessages(25, 1000, true), budget, versionBytes)),
+  );
 
-  const toolImages = host.capRequestImages([
-    { role: "user", content: [textPart("a"), imagePart()] },
-    { role: "tool", tool_call_id: "c1", content: "ok" },
-    { role: "user", content: [textPart("b"), imagePart()] },
+  const projected = host.projectOffloadedMessages([
+    { role: "user", content: [imageBlock(1000, true), { type: "text", text: "after" }] },
+    { role: "user", content: [imageBlock(1000, false)] },
   ]);
-  check("the window counts every image-bearing message", countImages(toolImages) === 2, String(countImages(toolImages)));
+  check(
+    "an offloaded image becomes a placeholder",
+    projected[0].content[0].type === "text" && projected[0].content[0].text.includes("image omitted"),
+    JSON.stringify(projected[0].content[0]),
+  );
+  check(
+    "the placeholder names the attachment",
+    projected[0].content[0].text.includes("shot.png") && projected[0].content[0].text.includes("sha256:"),
+    projected[0].content[0].text,
+  );
+  check("a retained image is untouched", projected[1].content[0].type === "image");
+  check("a history with nothing offloaded is returned as-is", host.projectOffloadedMessages([{ role: "user", content: [imageBlock(1, false)] }])[0].content[0].type === "image");
+  check(
+    "the placeholder is stable for the same reference",
+    host.offloadedImagePlaceholder({ attachmentId: "sha256:x", name: "a.png" }) ===
+      host.offloadedImagePlaceholder({ attachmentId: "sha256:x", name: "a.png" }),
+  );
+
+  /* the adapter asks the harness to offload instead of dropping silently */
+  const offloadAdapter = new host.MistralVibeAdapter(() => ({}));
+  offloadAdapter.apiKey = async () => "test-key";
+  let offloadFailure;
+  try {
+    for await (const _chunk of offloadAdapter.stream({
+      provider: "mistral-vibe",
+      model: "deepseek-v4-1-flash-1017",
+      messages: imageMessages(21),
+    })) {
+      // The stream must not start: the gate throws before any I/O.
+    }
+  } catch (error) {
+    offloadFailure = error;
+  }
+  check(
+    "an over-budget history raises IMAGE_OFFLOAD_REQUIRED",
+    offloadFailure !== undefined && offloadFailure.code === "IMAGE_OFFLOAD_REQUIRED",
+    offloadFailure && String(offloadFailure.code),
+  );
+  check(
+    "the failure carries the offload count",
+    offloadFailure !== undefined && offloadFailure.failure !== undefined && offloadFailure.failure.offloadImages === 20,
+    offloadFailure && JSON.stringify(offloadFailure.failure),
+  );
 
   /* --- the default thinking level -------------------------------------- */
   const deepseek = host.reasoningMetadata(host.MODEL_CATALOGUE.find((model) => model.id === "deepseek-v4-1-flash-1017"));
@@ -343,3 +372,4 @@ main().catch((error) => {
   console.error(error);
   process.exit(1);
 });
+
