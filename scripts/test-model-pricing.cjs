@@ -294,6 +294,46 @@ async function main() {
     JSON.stringify(tooLarge),
   );
 
+  /* --- the image vision-token estimate --------------------------------- */
+  check(
+    "a downscaled screenshot costs about a thousand tokens",
+    host.imageVisionTokens(1245, 932, 1024) === 1036,
+    String(host.imageVisionTokens(1245, 932, 1024)),
+  );
+  check(
+    "a small image is not enlarged",
+    host.imageVisionTokens(287, 812, 1024) === 11 * 29,
+    String(host.imageVisionTokens(287, 812, 1024)),
+  );
+  check(
+    "a square image at the edge costs 37x37 patches",
+    host.imageVisionTokens(4000, 4000, 1024) === 1369,
+    String(host.imageVisionTokens(4000, 4000, 1024)),
+  );
+  check(
+    "the estimate is capped",
+    host.imageVisionTokens(100000, 100000, 4096) === 1600,
+    String(host.imageVisionTokens(100000, 100000, 4096)),
+  );
+  check(
+    "a broken image costs nothing",
+    host.imageVisionTokens(0, 0) === 0 && host.imageVisionTokens(undefined, 5) === 0,
+  );
+
+  const adapter = new host.MistralVibeAdapter(() => ({ imageMaxEdge: 1024 }));
+  const pricing = adapter.imageRequestPricing("mistral-vibe", "deepseek-v4-1-flash-1017");
+  check("the route prices request images", pricing !== undefined && typeof pricing.priceImages === "function");
+  const pricedImages = pricing.priceImages([
+    { attachment: { width: 1245, height: 932 } },
+    { attachment: { width: 287, height: 812 } },
+  ]);
+  check(
+    "one price per image, sized from the sent dimensions",
+    pricedImages.length === 2 && pricedImages[0].visualTokens === 1036 && pricedImages[1].visualTokens === 319,
+    JSON.stringify(pricedImages),
+  );
+  check("no model-visible image text is claimed", pricedImages.every((entry) => entry.text === ""));
+
   const failedChecks = results.filter((result) => !result.ok);
   console.log("\n" + (results.length - failedChecks.length) + "/" + results.length + " checks passed");
   process.exit(failedChecks.length === 0 ? 0 : 1);
