@@ -331,6 +331,23 @@ async function main() {
     String(seen(batches)),
   );
 
+  /* a visual workflow keeps the last few batches, not just the newest one */
+  const fourBatches = [
+    userImage("m1"),
+    answer(),
+    toolImage("t1-a"), toolImage("t1-b"),
+    answer(),
+    toolImage("t2-a"), toolImage("t2-b"),
+    answer(),
+    toolImage("t3-a"), toolImage("t3-b"),
+    answer(),
+    toolImage("t4-a"), toolImage("t4-b"),
+  ];
+  const seenKeeping = (keep) => host.seenImageOffloadCount(fourBatches, "mistral-vibe", "deepseek-v4-1-flash-1017", keep);
+  check("keeping one batch offloads every older image", seenKeeping(1) === 7, String(seenKeeping(1)));
+  check("keeping three batches offloads only the oldest", seenKeeping(3) === 3, String(seenKeeping(3)));
+  check("keeping every batch offloads nothing", seenKeeping(99) === 0, String(seenKeeping(99)));
+
   /* --- the default thinking level -------------------------------------- */
   const deepseek = host.reasoningMetadata(host.MODEL_CATALOGUE.find((model) => model.id === "deepseek-v4-1-flash-1017"));
   check("deepseek v4.1 flash thinks by default", deepseek !== undefined && deepseek.defaultEffort === "high", deepseek && deepseek.defaultEffort);

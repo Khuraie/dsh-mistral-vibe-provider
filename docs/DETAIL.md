@@ -45,9 +45,10 @@ the Mistral API actually supports.
   turns it off.
 - An image the model has already answered on is offloaded before replay
   (`offloadSeenImages`, default on), so the transcript change lands at the recent
-  tail instead of deep inside the cached prefix. The newest image-bearing message
-  is exempt, so a screenshot stays visible across follow-ups until a newer one
-  arrives.
+  tail instead of deep inside the cached prefix. The newest `imageKeepBatches`
+  batches (default 3) keep their pixels: a visual workflow compares one render
+  against the previous one, and offloading that previous render is what makes a
+  model report that it forgot what it just looked at.
 - Mistral refuses a request carrying more than 20 images (`400
   invalid_request_invalid_args`, code 3051). The adapter does not drop images
   itself: it fails the step with `IMAGE_OFFLOAD_REQUIRED` and the count, and the
