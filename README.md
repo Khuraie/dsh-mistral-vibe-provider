@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <img alt="version" src="https://img.shields.io/badge/version-0.1.26-FF3D00?style=flat-square&labelColor=17171D">
+  <img alt="version" src="https://img.shields.io/badge/version-0.1.27-FF3D00?style=flat-square&labelColor=17171D">
   <img alt="license" src="https://img.shields.io/badge/license-MIT-FF7A00?style=flat-square&labelColor=17171D">
   <img alt="DeepSeek Harness" src="https://img.shields.io/badge/DeepSeek%20Harness-plugin-B1004B?style=flat-square&labelColor=17171D">
   <img alt="platform" src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-2B2B33?style=flat-square&labelColor=17171D">
