@@ -1,15 +1,31 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Mistral Vibe">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" width="240" height="240" role="img" aria-label="Mistral Vibe">
   <defs>
-    <linearGradient id="mv" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#FF7A00"/>
-      <stop offset="0.55" stop-color="#FF3D00"/>
-      <stop offset="1" stop-color="#B1004B"/>
+    <linearGradient id="mvbg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#242433"/>
+      <stop offset="1" stop-color="#161625"/>
     </linearGradient>
   </defs>
-  <rect x="2" y="2" width="60" height="60" rx="14" fill="url(#mv)"/>
-  <g fill="none" stroke="#FFFFFF" stroke-linecap="round" stroke-width="4">
-    <path d="M14 44V22l9 12 9-12v22"/>
-    <path d="M38 22l12 22"/>
-    <path d="M50 22L38 44"/>
+  <rect width="240" height="240" fill="url(#mvbg)"/>
+  <g shape-rendering="crispEdges">
+    <rect x="63" y="63" width="23" height="23" fill="#ffaf01"/>
+    <rect x="155" y="63" width="23" height="23" fill="#ffaf01"/>
+    <rect x="63" y="86" width="23" height="23" fill="#ff8204"/>
+    <rect x="86" y="86" width="23" height="23" fill="#ff8204"/>
+    <rect x="132" y="86" width="23" height="23" fill="#ff8204"/>
+    <rect x="155" y="86" width="23" height="23" fill="#ff8204"/>
+    <rect x="63" y="109" width="23" height="23" fill="#fa500f"/>
+    <rect x="86" y="109" width="23" height="23" fill="#fa500f"/>
+    <rect x="109" y="109" width="23" height="23" fill="#fa500f"/>
+    <rect x="132" y="109" width="23" height="23" fill="#fa500f"/>
+    <rect x="155" y="109" width="23" height="23" fill="#fa500f"/>
+    <rect x="63" y="132" width="23" height="23" fill="#e51300"/>
+    <rect x="109" y="132" width="23" height="23" fill="#e51300"/>
+    <rect x="155" y="132" width="23" height="23" fill="#e51300"/>
+    <rect x="40" y="155" width="23" height="23" fill="#c4001d"/>
+    <rect x="63" y="155" width="23" height="23" fill="#c4001d"/>
+    <rect x="86" y="155" width="23" height="23" fill="#c4001d"/>
+    <rect x="132" y="155" width="23" height="23" fill="#c4001d"/>
+    <rect x="155" y="155" width="23" height="23" fill="#c4001d"/>
+    <rect x="178" y="155" width="23" height="23" fill="#c4001d"/>
   </g>
 </svg>

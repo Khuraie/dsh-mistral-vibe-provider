@@ -15,6 +15,10 @@
       <stop offset="0.55" stop-color="#B1004B" stop-opacity="0.07"/>
       <stop offset="1" stop-color="#0B0B0F" stop-opacity="0"/>
     </radialGradient>
+    <linearGradient id="iconbg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#242433"/>
+      <stop offset="1" stop-color="#161625"/>
+    </linearGradient>
     <pattern id="grid" width="34" height="34" patternUnits="userSpaceOnUse">
       <path d="M34 0H0V34" fill="none" stroke="#FFFFFF" stroke-opacity="0.04" stroke-width="1"/>
     </pattern>
@@ -24,13 +28,31 @@
   <rect width="1200" height="300" fill="url(#grid)"/>
   <rect width="1200" height="300" fill="url(#glow)"/>
 
-  <g transform="translate(80 92)">
-    <rect width="116" height="116" rx="27" fill="url(#mark)"/>
-    <g transform="scale(1.8125)" fill="none" stroke="#FFFFFF" stroke-linecap="round" stroke-width="4">
-      <path d="M14 44V22l9 12 9-12v22"/>
-      <path d="M38 22l12 22"/>
+  <svg x="80" y="92" width="116" height="116" viewBox="0 0 240 240">
+    <rect width="240" height="240" fill="url(#iconbg)"/>
+    <g shape-rendering="crispEdges">
+      <rect x="63" y="63" width="23" height="23" fill="#ffaf01"/>
+      <rect x="155" y="63" width="23" height="23" fill="#ffaf01"/>
+      <rect x="63" y="86" width="23" height="23" fill="#ff8204"/>
+      <rect x="86" y="86" width="23" height="23" fill="#ff8204"/>
+      <rect x="132" y="86" width="23" height="23" fill="#ff8204"/>
+      <rect x="155" y="86" width="23" height="23" fill="#ff8204"/>
+      <rect x="63" y="109" width="23" height="23" fill="#fa500f"/>
+      <rect x="86" y="109" width="23" height="23" fill="#fa500f"/>
+      <rect x="109" y="109" width="23" height="23" fill="#fa500f"/>
+      <rect x="132" y="109" width="23" height="23" fill="#fa500f"/>
+      <rect x="155" y="109" width="23" height="23" fill="#fa500f"/>
+      <rect x="63" y="132" width="23" height="23" fill="#e51300"/>
+      <rect x="109" y="132" width="23" height="23" fill="#e51300"/>
+      <rect x="155" y="132" width="23" height="23" fill="#e51300"/>
+      <rect x="40" y="155" width="23" height="23" fill="#c4001d"/>
+      <rect x="63" y="155" width="23" height="23" fill="#c4001d"/>
+      <rect x="86" y="155" width="23" height="23" fill="#c4001d"/>
+      <rect x="132" y="155" width="23" height="23" fill="#c4001d"/>
+      <rect x="155" y="155" width="23" height="23" fill="#c4001d"/>
+      <rect x="178" y="155" width="23" height="23" fill="#c4001d"/>
     </g>
-  </g>
+  </svg>
 
   <text x="228" y="142" font-family="'Segoe UI', Inter, Helvetica, Arial, sans-serif" font-size="54" font-weight="700" fill="#F7F4EF">Mistral Vibe</text>
   <text x="230" y="188" font-family="'Segoe UI', Inter, Helvetica, Arial, sans-serif" font-size="25" fill="#9B9BA8">for DeepSeek Harness</text>
