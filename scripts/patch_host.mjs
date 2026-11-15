@@ -286,7 +286,7 @@ replaceOnce(
     const stored = await storeSecret(ref, key);
     if (!stored) await savePatch({ apiKey: key });
     try {
-      ctx.logger?.("@mars-sea/dsh-mistral-vibe-provider")?.info?.("browser sign-in stored a Vibe Code key");
+      ctx.logger?.("@khuraie/dsh-mistral-vibe-provider")?.info?.("browser sign-in stored a Vibe Code key");
     } catch {
       // Logging is best effort.
     }
@@ -315,14 +315,14 @@ replaceOnce("build", 'const BUILD = "1.1.1+6ead0d1b";', 'const BUILD = "0.1.0+vi
 replaceOnce(
   "name",
   'export const name = "dsh-mistral-vibe";export const inject = ["llm"];',
-  'export const name = "@mars-sea/dsh-mistral-vibe-provider";\nexport const inject = ["llm"];',
+  'export const name = "@khuraie/dsh-mistral-vibe-provider";\nexport const inject = ["llm"];',
 );
-source = source.split('ctx.logger?.("dsh-mistral-vibe")').join('ctx.logger?.("@mars-sea/dsh-mistral-vibe-provider")');
+source = source.split('ctx.logger?.("dsh-mistral-vibe")').join('ctx.logger?.("@khuraie/dsh-mistral-vibe-provider")');
 source = source.replace(
   '"dsh-mistral-vibe: own settings page"',
-  '"@mars-sea/dsh-mistral-vibe-provider: own settings page"',
+  '"@khuraie/dsh-mistral-vibe-provider: own settings page"',
 );
-source = source.replace('"dsh-mistral-vibe: http routes"', '"@mars-sea/dsh-mistral-vibe-provider: http routes"');
+source = source.replace('"dsh-mistral-vibe: http routes"', '"@khuraie/dsh-mistral-vibe-provider: http routes"');
 
 writeFileSync(FILE, source);
 console.log(`patched ${FILE.pathname}`);

@@ -263,7 +263,7 @@ function insertBefore(index, block) {
 
 /* 6. identity: module id, exported name, boundary label. */
 let source = lines.join("\n");
-source = source.replace('id: "dsh-mistral-vibe",', 'id: "@mars-sea/dsh-mistral-vibe-provider",');
-source = source.replace('const name = "dsh-mistral-vibe";', 'const name = "@mars-sea/dsh-mistral-vibe-provider";');
+source = source.replace('id: "dsh-mistral-vibe",', 'id: "@khuraie/dsh-mistral-vibe-provider",');
+source = source.replace('const name = "dsh-mistral-vibe";', 'const name = "@khuraie/dsh-mistral-vibe-provider";');
 writeFileSync(FILE, source);
 console.log("patched", FILE.pathname);

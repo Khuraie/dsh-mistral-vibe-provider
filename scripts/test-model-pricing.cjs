@@ -467,6 +467,26 @@ async function main() {
     "affinity can be turned off",
     projectedSettings({ sendAffinity: false }).sendAffinity === false,
   );
+  check(
+    "the image edge is projected",
+    projectedSettings({ imageMaxEdge: 1280 }).imageMaxEdge === 1280,
+    String(projectedSettings({ imageMaxEdge: 1280 }).imageMaxEdge),
+  );
+  check(
+    "a configured edge reaches the request target",
+    host.imageRequestTargetFor(projectedSettings({ imageMaxEdge: 1280 })).width === 1280,
+    String(host.imageRequestTargetFor(projectedSettings({ imageMaxEdge: 1280 })).width),
+  );
+  check(
+    "the byte budget is projected too",
+    host.imageRequestTargetFor(projectedSettings({ imageMaxBytesKb: 512 })).maxBytes === 512 * 1024,
+    String(host.imageRequestTargetFor(projectedSettings({ imageMaxBytesKb: 512 })).maxBytes),
+  );
+  check(
+    "an unset edge leaves the resolver on its default",
+    host.imageRequestTargetFor(projectedSettings({})).width === 1024,
+    String(host.imageRequestTargetFor(projectedSettings({})).width),
+  );
 
   /* --- sticky routing for the prefix cache ----------------------------- */
   const affinity = (settings, sessionId) => JSON.stringify(host.affinityHeader(settings, sessionId));

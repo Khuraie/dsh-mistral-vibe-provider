@@ -12,4 +12,4 @@
 # bundle keeps working here.
 - insert:
     - id: llm-mistral-vibe
-      name: "@mars-sea/dsh-mistral-vibe-provider"
+      name: "@khuraie/dsh-mistral-vibe-provider"
