@@ -41,6 +41,10 @@ Vibe Code budget and the Studio/API budget.
   never priced here.
 - **Per-model thinking levels** mapped onto `reasoning_effort`, with reasoning
   streamed as a thinking block rather than as text.
+- **Screenshots that do not wreck the cache.** Images are downscaled to
+  1024px / 768 KB, capped at Mistral's 20-image ceiling through the harness's
+  durable offload protocol, and kept visible by default so a visual workflow can
+  compare one render against the next. See [Images](#images).
 - **Secrets stay out of YAML.** Keys live in the credential record named by
   `apiKeyEnv` (`MISTRAL_API_KEY` by default); the row keeps only a reference.
 
@@ -70,6 +74,75 @@ without opening Settings.
 All routes are loopback/same-origin by default and accept a configured access
 token for an exposed web UI.
 
+## Images
+
+Screenshots are the one input that can wreck Mistral's prompt cache, so this
+route manages them rather than forwarding whatever the harness hands it. The
+cache is a longest-common-prefix cache: it only serves a request that repeats the
+previous one byte for byte, and an image payload is the biggest thing that can
+change.
+
+### Downscaling
+
+Every image is re-encoded before it is sent: **1024px** on the longest edge,
+**768 KB** encoded. In a measured Session, steps carrying a 1–4 MB screenshot
+fell to 1–26% cache hit while text-only steps in the same Session stayed at
+86–100%. The harness default for other providers is 1568px / 4 MB; this route
+trades that detail for cache.
+
+| setting | default | effect |
+| --- | --- | --- |
+| `imageMaxEdge` | `1024` | longest edge, in pixels, of the image sent |
+| `imageMaxBytesKb` | `768` | encoded byte budget for one request image |
+
+### The 20-image ceiling
+
+Mistral refuses a request carrying more than **20 images** —
+`400 invalid_request_invalid_args`, "Total number of images exceeds the maximum
+allowed of 20", code 3051. The route does not drop images itself: that would
+rewrite the transcript on every request and break the prefix cache. Instead it
+fails the step with `IMAGE_OFFLOAD_REQUIRED` and the count it needs, and the
+harness's `dsh-compaction-image-offload` plugin records one durable
+`image/offload` selection before retrying. The count is retired **four at a
+time**, so the retained window stays between 17 and 20 images instead of
+collapsing to one.
+
+An offloaded image becomes a named placeholder rather than a silent gap:
+
+```text
+[image omitted from this request to stay inside the image limit (not a failed
+ read); "render-04.png" (sha256:…)]
+```
+
+The "not a failed read" wording is load-bearing: without it a model finds the
+placeholder where its own `read_image` result used to be and reports the read as
+broken, then re-reads the file.
+
+### Keeping images visible
+
+By default images stay on the wire up to the ceiling, because a visual workflow —
+render, look, edit, re-render — needs the previous render to compare against.
+`offloadSeenImages` is the **opt-in** cache mode, off by default the way Command
+Code ships its equivalent: once the model has answered on an image, that image
+becomes a placeholder, so a new screenshot no longer rolls the cache back. The
+cost is that seeing an old image again means reading it again.
+
+| setting | default | effect |
+| --- | --- | --- |
+| `offloadSeenImages` | `false` | opt-in: retire images the model has already answered on |
+| `imageKeepBatches` | `3` | in that mode, how many recent image batches keep their pixels |
+
+### Measured
+
+| Session | images | offloads | cache efficiency |
+| --- | --- | --- | --- |
+| 52-image judging, batch-cap design | 52 | 4 | 78.8% |
+| 192-step visual iteration, current default | 40 | 17 (2 after the fix) | **95.4%** |
+
+Keeping images and letting the budget retire four at a time measured *better*
+than the aggressive offloading it replaced: fewer transcript rewrites means more
+of the prefix survives.
+
 ## Notes and limits
 
 - **Thinking is on by default.** Mistral's own default for a request that carries
@@ -78,13 +151,9 @@ token for an exposed web UI.
   This route declares `high` as the default level for every model that can think
   (the official DeepSeek route does the same), so a fresh Session thinks unless
   you pick `off` in the model picker.
-- **Screenshots are downscaled to 1024px / 768 KB.** Mistral's prompt cache only
-  serves a request that repeats byte-for-byte, and a large image payload makes
-  image-bearing requests miss it entirely: in a measured Session, steps carrying
-  a 1–4 MB screenshot fell to 1–26% cache hit while text-only steps stayed at
-  86–100%. The default target is therefore smaller than the harness default for
-  other providers (1568px / 4 MB). Raise `imageMaxEdge` / `imageMaxBytesKb` for
-  finer detail at the cost of cache hits.
+- **Images are managed, not forwarded.** Downscaling, the 20-image ceiling, the
+  durable offload protocol and the opt-in cache mode are all in
+  [Images](#images) above.
 - **Sticky routing for the prefix cache.** Mistral's prompt cache lives on the
   backend instance that served a prefix, so a request routed to another instance
   misses even when the prefix is byte-identical — the whole-prefix drops that
@@ -92,24 +161,6 @@ token for an exposed web UI.
   `x-affinity: <session id>`, the same header Mistral's own Vibe CLI sends, so a
   Session stays on one instance. It is only sent to `*.mistral.ai` hosts and can
   be turned off with `sendAffinity: false`.
-- **Images stay visible by default.** Up to Mistral's 20-image ceiling the
-  transcript keeps every screenshot, so a visual workflow can compare one render
-  against the previous one. `offloadSeenImages` (off by default, like Command
-  Code's equivalent) is the opt-in cache mode: images the model has already
-  answered on become placeholders, so a new screenshot no longer rolls the
-  prompt cache back — at the cost of having to re-read an image to see it again.
-  `imageKeepBatches` (default 3) keeps that mode's newest batches as pixels.
-- **At most 20 images per request — enforced through the harness's offload
-  protocol.** Mistral answers `400 invalid_request_invalid_args` ("Total number
-  of images exceeds the maximum allowed of 20", code 3051) for a longer image
-  history. Instead of dropping images itself — which rewrites the transcript on
-  every request and breaks Mistral's longest-common-prefix cache — the adapter
-  fails the step with `IMAGE_OFFLOAD_REQUIRED` and the count it needs. The
-  harness's `dsh-compaction-image-offload` plugin records one durable
-  `image/offload` selection (the oldest images become placeholders naming each
-  attachment) and retries. The count is retired four at a time, so the retained
-  window stays between 17 and 20 images instead of collapsing to one.
-
 - **Tier gating is server-side per model.** On a free plan the live catalogue
   simply omits paid models such as `deepseek-v4-1-flash-1017`, and calling one
   answers `403 {"type":"tier_not_allowed","code":"1910"}`. The picker marks rows
