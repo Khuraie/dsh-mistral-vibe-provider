@@ -48,15 +48,47 @@ Studio/API budget.
 
 ## Install
 
+The package is **not published on npm yet**, so install it from the repository.
+`dsh plugin` forwards its arguments to `pnpm` inside the profile directory, which
+means any spec pnpm accepts works — a path, `file:`, `github:owner/repo`, or a
+published version.
+
+**From the repository:**
+
 ```sh
-dsh plugin --profile <profile> add @mars-sea/dsh-mistral-vibe-provider
+dsh plugin --profile <profile> add github:Khuraie/dsh-mistral-vibe-provider
 ```
+
+**From a clone** — what a development setup wants, because the profile links the
+checkout and an edit is live after a restart:
+
+```sh
+git clone https://github.com/Khuraie/dsh-mistral-vibe-provider
+dsh plugin --profile <profile> add ./dsh-mistral-vibe-provider
+```
+
+`dsh plugin` only installs the dependency. The launcher stacks the patch layers
+listed in `dsh.profile.bundles`, so add the package name there too — in
+`~/.dsh/profiles/<profile>/package.json`:
+
+```json
+"dsh": {
+  "profile": {
+    "bundles": ["…", "@mars-sea/dsh-mistral-vibe-provider"]
+  }
+}
+```
+
+The in-app plugin manager does both steps in one go. Restart DSH afterwards.
 
 Then **Settings → Mistral Vibe** and either sign in with Mistral or paste a Vibe
 Code API key. Hit **Fetch available models** to persist the live catalogue, and
 **Refresh** on the account card to re-read the meters. The two meters also appear
 in the sidebar foot above the account row, so the remaining allowance is visible
 without opening Settings.
+
+Once the package is published, the shortest form becomes
+`dsh plugin --profile <profile> add @mars-sea/dsh-mistral-vibe-provider`.
 
 ## Images
 
