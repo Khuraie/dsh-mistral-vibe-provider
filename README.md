@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <img alt="version" src="https://img.shields.io/badge/version-0.1.28-FF3D00?style=flat-square&labelColor=17171D">
+  <img alt="version" src="https://img.shields.io/badge/version-0.1.29-FF3D00?style=flat-square&labelColor=17171D">
   <img alt="license" src="https://img.shields.io/badge/license-MIT-FF7A00?style=flat-square&labelColor=17171D">
   <img alt="DeepSeek Harness" src="https://img.shields.io/badge/DeepSeek%20Harness-plugin-B1004B?style=flat-square&labelColor=17171D">
   <img alt="platform" src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-2B2B33?style=flat-square&labelColor=17171D">
@@ -172,7 +172,12 @@ of the prefix survives.
 | `GET /mistral-vibe/sign-in/status?processId=…` | poll an attempt; on approval stores the key |
 
 All routes are loopback/same-origin by default and accept a configured access
-token for an exposed web UI.
+token for an exposed web UI. Each one also passes DSH's own
+`connection.requestRejection` check before its handler runs — a route mounted
+with `webServer.register` gets none of the host's Host/Origin admission for free,
+and without that check a page on another origin could POST to these routes. The
+configured access token is the one documented exception, because another page
+cannot read it.
 
 ## Notes and limits
 
