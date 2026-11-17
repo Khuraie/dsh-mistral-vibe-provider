@@ -352,6 +352,13 @@ async function main() {
   check("keeping one batch offloads every older image", seenKeeping(1) === 7, String(seenKeeping(1)));
   check("keeping three batches offloads only the oldest", seenKeeping(3) === 3, String(seenKeeping(3)));
   check("keeping every batch offloads nothing", seenKeeping(99) === 0, String(seenKeeping(99)));
+  // A keep window wider than the history must keep everything: a negative slice
+  // index used to exempt only the last run and offload the rest.
+  check(
+    "a keep window wider than the history offloads nothing",
+    host.seenImageOffloadCount(batches, "mistral-vibe", "deepseek-v4-1-flash-1017", 9) === 0,
+    String(host.seenImageOffloadCount(batches, "mistral-vibe", "deepseek-v4-1-flash-1017", 9)),
+  );
 
   /* --- the default thinking level -------------------------------------- */
   const deepseek = host.reasoningMetadata(host.MODEL_CATALOGUE.find((model) => model.id === "deepseek-v4-1-flash-1017"));

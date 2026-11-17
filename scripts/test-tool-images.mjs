@@ -49,7 +49,7 @@ const messages = [
   { role: "user", content: "Look at the screenshot." },
   {
     role: "assistant",
-    content: [{ type: "tool-call", callId: "call_abc", name: "read_image", arguments: '{"path":"x.png"}' }],
+    content: [{ type: "tool-call", id: "call_abc", name: "read_image", arguments: '{"path":"x.png"}' }],
   },
   {
     role: "tool",

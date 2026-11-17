@@ -45,7 +45,7 @@ checks.push(["default output 65536 (adapter clamp, inside harness range)", info.
 checks.push(["image modality advertised", (info.inputModalities ?? []).includes("image")]);
 const efforts = (info.reasoning?.efforts ?? []).map((e) => e.id);
 checks.push(["effort ladder off/low/high/max", JSON.stringify(efforts) === JSON.stringify(["off", "low", "high", "max"])]);
-checks.push(["default effort off", info.reasoning?.defaultEffort === "off"]);
+checks.push(["default effort high", info.reasoning?.defaultEffort === "high"]);
 
 /* The exact body the route would send for a reasoning + image + tools turn. */
 const message = [
