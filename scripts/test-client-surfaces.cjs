@@ -496,10 +496,15 @@ async function main() {
   check("the run marks itself as this plugin's", runRoot.hasAttribute("data-mistral-vibe-session-cost"));
   check("the run starts with the shipped separator", runRoot.children[0].textContent === "·", runRoot.children[0].textContent);
   check("the run shows the amount with no glyph", runRoot.children[1].textContent === "≈$1.51", runRoot.children[1].textContent);
+  // The id is per run now so two composers cannot collide; the prefix is the
+  // contract, and the description must point at this run's own hidden node.
+  const describedBy = pill.getAttribute("aria-describedby");
   check(
     "the run describes itself for assistive tech",
-    pill.getAttribute("aria-describedby") === "dsh-mistral-vibe-session-cost",
-    String(pill.getAttribute("aria-describedby")),
+    typeof describedBy === "string" &&
+      describedBy.startsWith("dsh-mistral-vibe-session-cost") &&
+      runRoot.children[2].id === describedBy,
+    String(describedBy),
   );
   check("the run carries the breakdown as a tooltip", runRoot.title.includes("input 1.0M"), runRoot.title.slice(0, 80));
 
